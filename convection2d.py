@@ -3,7 +3,7 @@
 # =======================
 
 import sys
-directory = '/home/marquesleandro/lib_class'
+directory = './lib_class'
 sys.path.insert(0, directory)
 
 from tqdm import tqdm
@@ -17,7 +17,8 @@ import search_file
 import import_msh
 import assembly
 import benchmark_problems
-import simulator_solver
+import semi_lagrangian 
+import export_vtk
 import relatory
 
 
@@ -43,71 +44,29 @@ print ' INPUT:'
 print ' ------'
 print ""
 
+
 # ----------------------------------------------------------------------------
-print ' (1) - Simulator 1D'
-print ' (2) - Simulator 2D'
-simulator_option = int(raw_input(" Enter simulator option above: "))
+benchmark_problem = 'Convection 1D'
+# ----------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------
+print ' (1) - Linear Element'
+print ' (2) - Mini Element'
+print ' (3) - Quadratic Element'
+print ' (4) - Cubic Element'
+polynomial_option = int(raw_input(" Enter polynomial degree option above: "))
 print ""
 # ----------------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------------
-if simulator_option == 1:
- print ' (1) - Pure Convection'
- simulator_problem = int(raw_input(" Enter simulator problem above: "))
- print ""
-
-elif simulator_option == 2:
- print ' (4) - Pure Convection'
- simulator_problem = int(raw_input(" Enter simulator problem above: "))
- print ""
-# ----------------------------------------------------------------------------
-
-
-# ----------------------------------------------------------------------------
-mesh_name = (raw_input(" Enter name (.msh): ") + '.msh')
-equation_number = int(raw_input(" Enter equation number: "))
+print '  3 Gauss Points'
+print '  4 Gauss Points'
+print '  6 Gauss Points'
+print ' 12 Gauss Points'
+gausspoints = int(raw_input(" Enter Gauss Points Number option above: "))
 print ""
-
-Re = float(raw_input(" Enter Reynolds Number (Re): "))
-Sc = float(raw_input(" Enter Schmidt Number (Sc): "))
-print ""
-# ----------------------------------------------------------------------------
-
-
-# ----------------------------------------------------------------------------
-if simulator_option == 1:
- print ' (1) - Linear Element'
- print ' (2) - Quadratic Element'
- polynomial_option = int(raw_input(" Enter polynomial degree option above: "))
- print ""
-
-elif simulator_option == 2:
- print ' (1) - Linear Element'
- print ' (2) - Mini Element'
- print ' (3) - Quadratic Element'
- print ' (4) - Cubic Element'
- polynomial_option = int(raw_input(" Enter polynomial degree option above: "))
- print ""
-# ----------------------------------------------------------------------------
-
-
-# ----------------------------------------------------------------------------
-if simulator_option == 1:
- print '  3 Gauss Points'
- print '  4 Gauss Points'
- print '  5 Gauss Points'
- print ' 10 Gauss Points'
- gausspoints = int(raw_input(" Enter Gauss Points Number option above: "))
- print ""
-
-elif simulator_option == 2:
- print ' 3 Gauss Points'
- print ' 4 Gauss Points'
- print ' 6 Gauss Points'
- print ' 12 Gauss Points'
- gausspoints = int(raw_input(" Enter Gauss Points Number option above: "))
- print ""
 # ----------------------------------------------------------------------------
 
 
@@ -116,13 +75,12 @@ print ' (1) - Taylor Galerkin Scheme'
 print ' (2) - Semi Lagrangian Scheme'
 scheme_option = int(raw_input(" Enter simulation scheme option above: "))
 print ""
-print ""
 # ----------------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------------
 nt = int(raw_input(" Enter number of time interations (nt): "))
-directory_name = raw_input(" Enter folder name to save simulations: ")
+directory_save = raw_input(" Enter folder name to save simulations: ")
 print ""
 # ----------------------------------------------------------------------------
 
@@ -135,22 +93,82 @@ print ' ------------'
 
 start_time = time()
 
-directory = search_file.Find(mesh_name)
-if directory == 'File not found':
- sys.exit()
+# Linear Element
+if polynomial_option == 1:
+ mesh_name = 'malha_convection2D.msh'
+ equation_number = 1
 
-if simulator_option == 1:
- npoints, nelem, x, IEN, neumann_pts, dirichlet_pts, neighbors_nodes, neighbors_elements, far_neighbors_nodes, far_neighbors_elements, length_min, GL, nphysical = import_msh.Element1D(directory, mesh_name, equation_number, polynomial_option)
+ directory = search_file.Find(mesh_name)
+ if directory == 'File not found':
+  sys.exit()
 
- CFL = 0.5
- dt = float(CFL*length_min)
+ msh = import_msh.Linear2D(directory, mesh_name, equation_number)
+ msh.coord()
+ msh.ien()
 
 
-elif simulator_option == 2:
- npoints, nelem, x, y, IEN, neumann_edges, dirichlet_pts, neighbors_nodes, neighbors_elements, far_neighbors_nodes, far_neighbors_elements, length_min, GL, nphysical = import_msh.Element2D(directory, mesh_name, equation_number, polynomial_option)
+# Mini Element
+elif polynomial_option == 2:
+ mesh_name = 'malha_convection2D.msh'
+ equation_number = 1
 
- CFL = 0.5
- dt = float(CFL*length_min)
+ directory = search_file.Find(mesh_name)
+ if directory == 'File not found':
+  sys.exit()
+
+ msh = import_msh.Mini2D(directory, mesh_name, equation_number)
+ msh.coord()
+ msh.ien()
+
+# Quad Element
+elif polynomial_option == 3:
+ mesh_name = 'malha_convection2D_quad.msh'
+ equation_number = 1
+
+ directory = search_file.Find(mesh_name)
+ if directory == 'File not found':
+  sys.exit()
+
+ msh = import_msh.Quad2D(directory, mesh_name, equation_number)
+ msh.coord()
+ msh.ien()
+
+# Cubic Element
+elif polynomial_option == 4:
+ mesh_name = 'malha_convection2D_cubic.msh'
+ equation_number = 1
+
+ directory = search_file.Find(mesh_name)
+ if directory == 'File not found':
+  sys.exit()
+
+ msh = import_msh.Cubic2D(directory, mesh_name, equation_number)
+ msh.coord()
+ msh.ien()
+
+
+
+npoints                = msh.npoints
+nelem                  = msh.nelem
+x                      = msh.x
+y                      = msh.y
+IEN                    = msh.IEN
+neumann_edges            = msh.neumann_edges
+dirichlet_pts          = msh.dirichlet_pts
+neighbors_nodes        = msh.neighbors_nodes
+neighbors_elements     = msh.neighbors_elements
+far_neighbors_nodes    = msh.far_neighbors_nodes
+far_neighbors_elements = msh.far_neighbors_elements
+length_min             = msh.length_min
+GL                     = msh.GL
+nphysical              = msh.nphysical 
+
+
+Re = 10000.0
+Sc = 10000.0
+CFL = 0.5
+dt = float(CFL*length_min)
+
 
 end_time = time()
 import_mesh_time = end_time - start_time
@@ -167,12 +185,7 @@ print ' ---------'
 
 start_time = time()
 
-if simulator_option == 1:
- K, M, G, polynomial_order = assembly.Element1D(polynomial_option, GL, npoints, nelem, IEN, x, gausspoints)
-
-
-elif simulator_option == 2:
- Kxx, Kxy, Kyx, Kyy, K, M, MLump, Gx, Gy, polynomial_order = assembly.Element2D(polynomial_option, GL, npoints, nelem, IEN, x, y, gausspoints)
+Kxx, Kxy, Kyx, Kyy, K, M, MLump, Gx, Gy, polynomial_order = assembly.Element2D(polynomial_option, GL, npoints, nelem, IEN, x, y, gausspoints)
 
 
 end_time = time()
@@ -190,37 +203,20 @@ print ' --------------------------------'
 
 start_time = time()
 
-if simulator_option == 1:
- condition_concentration_LHS0 = sps.lil_matrix.copy(M)/dt
- condition_concentration = benchmark_problems.Convection1D(nphysical,npoints,x)
- condition_concentration.neumann_condition(neumann_pts[1])
- condition_concentration.dirichlet_condition(dirichlet_pts[1])
- condition_concentration.gaussian_elimination(condition_concentration_LHS0,neighbors_nodes)
- condition_concentration.initial_condition()
+condition_concentration_LHS0 = sps.lil_matrix.copy(M)/dt
+condition_concentration = benchmark_problems.Convection2D(nphysical,npoints,x,y)
+condition_concentration.neumann_condition(neumann_edges[1])
+condition_concentration.dirichlet_condition(dirichlet_pts[1])
+condition_concentration.gaussian_elimination(condition_concentration_LHS0,neighbors_nodes)
+condition_concentration.initial_condition()
 
- LHS = condition_concentration.LHS
- bc_dirichlet = condition_concentration.bc_dirichlet
- bc_neumann = condition_concentration.bc_neumann
- bc_2 = condition_concentration.bc_2
- scalar = np.copy(condition_concentration.c)
- vx = np.copy(condition_concentration.vx)
-
-elif simulator_option == 2:
- condition_concentration_LHS0 = sps.lil_matrix.copy(M)/dt
- condition_concentration = benchmark_problems.Convection2D(nphysical,npoints,x,y)
- condition_concentration.neumann_condition(neumann_edges[1])
- condition_concentration.dirichlet_condition(dirichlet_pts[1])
- condition_concentration.gaussian_elimination(condition_concentration_LHS0,neighbors_nodes)
- condition_concentration.initial_condition()
-
- LHS = condition_concentration.LHS
- bc_dirichlet = condition_concentration.bc_dirichlet
- bc_neumann = condition_concentration.bc_neumann
- bc_2 = condition_concentration.bc_2
- scalar = np.copy(condition_concentration.c)
- vx = np.copy(condition_concentration.vx)
- vy = np.copy(condition_concentration.vy)
-
+LHS = condition_concentration.LHS
+bc_dirichlet = condition_concentration.bc_dirichlet
+bc_neumann = condition_concentration.bc_neumann
+bc_2 = condition_concentration.bc_2
+c = np.copy(condition_concentration.c)
+vx = np.copy(condition_concentration.vx)
+vy = np.copy(condition_concentration.vy)
 
 
 
@@ -256,21 +252,139 @@ print ' ----------------------------'
 print ' SOLVE THE LINEARS EQUATIONS:'
 print ' ----------------------------'
 print ""
-print ' Saving simulation in %s' %directory_name
+print ' Saving simulation in %s' %directory_save
 print ""
 
 
 
 start_time = time()
 
-if simulator_option == 1: #Simulator 1D
- c, scheme_name = simulator_solver.Element1D(simulator_problem, scheme_option, polynomial_option, x, IEN, npoints, nelem, scalar, vx, dt, nt, Re, Sc, M, K, G, LHS, bc_dirichlet, bc_neumann, bc_2, neighbors_nodes, neighbors_elements, directory_name)
+
+# Taylor Galerkin
+if scheme_option == 1:
+ scheme_name = 'Taylor Galerkin'
+
+ for t in tqdm(range(0, nt)):
+
+  # ------------------------ Export VTK File --------------------------------------
+  save = export_vtk.Linear1D(x,IEN,npoints,nelem,c,c,c,vx,vx)
+  save.create_dir(directory_save)
+  save.saveVTK(directory_save + str(t))
+  # -------------------------------------------------------------------------------
+
+  # -------------------------------- Solver ---------------------------------------
+  A = np.copy(M)/dt
+  RHS = sps.lil_matrix.dot(A,c) - np.multiply(vx,sps.lil_matrix.dot(Gx,c))\
+                                - np.multiply(vy,sps.lil_matrix.dot(Gy,c))\
+                                - (dt/2.0)*np.multiply(vx,(np.multiply(vx,sps.lil_matrix.dot(Kxx,c))\
+                                                         + np.multiply(vy,sps.lil_matrix.dot(Kyx,c))))\
+                                - (dt/2.0)*np.multiply(vy,(np.multiply(vx,sps.lil_matrix.dot(Kxy,c))\
+                                                         + np.multiply(vy,sps.lil_matrix.dot(Kyy,c))))
+
+  RHS = RHS + (1.0/(Re*Sc))*bc_neumann
+  RHS = np.multiply(RHS,bc_2)
+  RHS = RHS - bc_dirichlet
+  
+  c = scipy.sparse.linalg.cg(LHS,RHS,c, maxiter=1.0e+05, tol=1.0e-05)
+  c = c[0].reshape((len(c[0]),1))
+  # -------------------------------------------------------------------------------
 
 
-elif simulator_option == 2: #Simulator 2D
- c, scheme_name = simulator_solver.Element2D(simulator_problem, scheme_option, polynomial_option, x, y, IEN, npoints, nelem, scalar, vx, vy, dt, nt, Re, Sc, M, Kxx, Kyx, Kxy, Kyy, Gx, Gy, LHS, bc_dirichlet, bc_neumann, bc_2, neighbors_nodes, neighbors_elements, directory_name)
+# Semi Lagrangian Linear
+elif scheme_option == 2:
+ scheme_name = 'Semi Lagrangian'
 
+ if polynomial_option == 1: #Linear Element
+  for t in tqdm(range(0, nt)):
 
+   # ------------------------ Export VTK File --------------------------------------
+   save = export_vtk.Linear2D(x,y,IEN,npoints,nelem,c,c,c,vx,vx)
+   save.create_dir(directory_save)
+   save.saveVTK(directory_save + str(t))
+   # -------------------------------------------------------------------------------
+
+   # -------------------------------- Solver ---------------------------------------
+   c_d = semi_lagrangian.Linear2D(npoints, neighbors_elements, IEN, x, y, vx, vy, dt, c)
+
+   A = np.copy(M)/dt
+   RHS = sps.lil_matrix.dot(A,c_d)
+ 
+   RHS = RHS + (1.0/(Re*Sc))*bc_neumann
+   RHS = np.multiply(RHS,bc_2)
+   RHS = RHS - bc_dirichlet
+
+   c = scipy.sparse.linalg.cg(LHS,RHS,c, maxiter=1.0e+05, tol=1.0e-05)
+   c = c[0].reshape((len(c[0]),1))
+   # -------------------------------------------------------------------------------
+
+ elif polynomial_option == 2: #Mini Element
+  for t in tqdm(range(0, nt)):
+
+   # ------------------------ Export VTK File --------------------------------------
+   save = export_vtk.Linear2D(x,y,IEN,npoints,nelem,c,c,c,vx,vx)
+   save.create_dir(directory_save)
+   save.saveVTK(directory_save + str(t))
+   # -------------------------------------------------------------------------------
+
+   # -------------------------------- Solver ---------------------------------------
+   c_d = semi_lagrangian.Mini2D(npoints, neighbors_elements, IEN, x, y, vx, vy, dt, c)
+
+   A = np.copy(M)/dt
+   RHS = sps.lil_matrix.dot(A,c_d)
+ 
+   RHS = RHS + (1.0/(Re*Sc))*bc_neumann
+   RHS = np.multiply(RHS,bc_2)
+   RHS = RHS - bc_dirichlet
+
+   c = scipy.sparse.linalg.cg(LHS,RHS,c, maxiter=1.0e+05, tol=1.0e-05)
+   c = c[0].reshape((len(c[0]),1))
+   # -------------------------------------------------------------------------------
+
+ elif polynomial_option == 3: #Quad Element
+  for t in tqdm(range(0, nt)):
+
+   # ------------------------ Export VTK File --------------------------------------
+   save = export_vtk.Linear2D(x,y,IEN,npoints,nelem,c,c,c,vx,vx)
+   save.create_dir(directory_save)
+   save.saveVTK(directory_save + str(t))
+   # -------------------------------------------------------------------------------
+
+   # -------------------------------- Solver ---------------------------------------
+   c_d = semi_lagrangian.Quad2D(npoints, neighbors_elements, IEN, x, y, vx, vy, dt, c)
+
+   A = np.copy(M)/dt
+   RHS = sps.lil_matrix.dot(A,c_d)
+ 
+   RHS = RHS + (1.0/(Re*Sc))*bc_neumann
+   RHS = np.multiply(RHS,bc_2)
+   RHS = RHS - bc_dirichlet
+
+   c = scipy.sparse.linalg.cg(LHS,RHS,c, maxiter=1.0e+05, tol=1.0e-05)
+   c = c[0].reshape((len(c[0]),1))
+   # -------------------------------------------------------------------------------
+
+ elif polynomial_option == 4: #Cubic Element
+  for t in tqdm(range(0, nt)):
+
+   # ------------------------ Export VTK File --------------------------------------
+   save = export_vtk.Linear2D(x,y,IEN,npoints,nelem,c,c,c,vx,vx)
+   save.create_dir(directory_save)
+   save.saveVTK(directory_save + str(t))
+   # -------------------------------------------------------------------------------
+
+   # -------------------------------- Solver ---------------------------------------
+   c_d = semi_lagrangian.Cubic2D(npoints, neighbors_elements, IEN, x, y, vx, vy, dt, c)
+
+   A = np.copy(M)/dt
+   RHS = sps.lil_matrix.dot(A,c_d)
+ 
+   RHS = RHS + (1.0/(Re*Sc))*bc_neumann
+   RHS = np.multiply(RHS,bc_2)
+   RHS = RHS - bc_dirichlet
+
+   c = scipy.sparse.linalg.cg(LHS,RHS,c, maxiter=1.0e+05, tol=1.0e-05)
+   c = c[0].reshape((len(c[0]),1))
+   # -------------------------------------------------------------------------------
 
 else:
  print ""
@@ -294,9 +408,9 @@ print ' ----------------'
 print ' SAVING RELATORY:'
 print ' ----------------'
 print ""
-print ' End simulation. Relatory saved in %s' %directory_name
+print ' End simulation. Relatory saved in %s' %directory_save
 print ""
 
 # -------------------------------- Export Relatory ---------------------------------------
-relatory.export(directory_name, sys.argv[0], simulator_problem, scheme_name, mesh_name, equation_number, npoints, nelem, length_min, dt, nt, Re, Sc, import_mesh_time, assembly_time, bc_apply_time, solution_time, polynomial_order, gausspoints)
+relatory.export(directory_save, sys.argv[0], benchmark_problem, scheme_name, mesh_name, equation_number, npoints, nelem, length_min, dt, nt, Re, Sc, import_mesh_time, assembly_time, bc_apply_time, solution_time, polynomial_order, gausspoints)
 

@@ -283,7 +283,7 @@ elif scheme_option == 2:
   for t in tqdm(range(0, nt)):
 
    # ------------------------ Export VTK File --------------------------------------
-   save = export_vtk.Linear1D(x,IEN,npoints,nelem,c,c,c,vx,vx)
+   save = export_vtk.Quad1D(x,IEN,npoints,nelem,c,c,c,vx,vx)
    save.create_dir(directory_save)
    save.saveVTK(directory_save + str(t))
    # -------------------------------------------------------------------------------
