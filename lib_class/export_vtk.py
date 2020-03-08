@@ -614,24 +614,29 @@ class Quad2D:
 
  def create_dir(_self,_dir):
 
-  _self.path = '/home/marquesleandro'
-  if not 'results' in os.listdir(_self.path):
-   os.mkdir('/home/marquesleandro/results')
+  _self.path = os.getcwd()
 
-  _self.path = '/home/marquesleandro/results'
+  # make result directory
+  if not 'results' in os.listdir(_self.path):
+   os.mkdir(_self.path + '/results')
+
+
+  # make save directory
+  _self.path = _self.path + '/results'
   if not _dir in os.listdir(_self.path):
-   #ndir = len(os.listdir(_self.path))
-   #_self.dir = _dir + str(ndir)
    _self.dir = _dir
-   create_dir = os.mkdir(_self.path + '/' + _self.dir)
+   os.mkdir(_self.path + '/' + _self.dir)
 
   else:
    _self.dir = _dir
 
+  _self.path = _self.path + '/' + _self.dir
+
+
 
  def saveVTK(_self,_file):
 
-  vtkFile = open(_self.path + '/' + _self.dir + '/' + _file + '.vtk', 'w')
+  vtkFile = open(_self.path + '/' + _file + '.vtk', 'w')
   _self.vtkHeader(vtkFile)
 
   _self.vtkCoords(vtkFile)

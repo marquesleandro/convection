@@ -2,6 +2,9 @@
 # Importing the libraries
 # =======================
 
+import os
+initial_path = os.getcwd()
+
 import sys
 directory = './lib_class'
 sys.path.insert(0, directory)
@@ -43,11 +46,6 @@ print ' ------'
 print ' INPUT:'
 print ' ------'
 print ""
-
-
-# ----------------------------------------------------------------------------
-benchmark_problem = 'Convection 1D'
-# ----------------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------------
@@ -209,6 +207,8 @@ condition_concentration.neumann_condition(neumann_edges[1])
 condition_concentration.dirichlet_condition(dirichlet_pts[1])
 condition_concentration.gaussian_elimination(condition_concentration_LHS0,neighbors_nodes)
 condition_concentration.initial_condition()
+benchmark_problem = condition_concentration.benchmark_problem
+
 
 LHS = condition_concentration.LHS
 bc_dirichlet = condition_concentration.bc_dirichlet
@@ -259,7 +259,7 @@ print ""
 
 start_time = time()
 
-
+os.chdir(initial_path)
 # Taylor Galerkin
 if scheme_option == 1:
  scheme_name = 'Taylor Galerkin'
@@ -344,7 +344,7 @@ elif scheme_option == 2:
   for t in tqdm(range(0, nt)):
 
    # ------------------------ Export VTK File --------------------------------------
-   save = export_vtk.Linear2D(x,y,IEN,npoints,nelem,c,c,c,vx,vx)
+   save = export_vtk.Quad2D(x,y,IEN,npoints,nelem,c,c,c,vx,vx)
    save.create_dir(directory_save)
    save.saveVTK(directory_save + str(t))
    # -------------------------------------------------------------------------------
@@ -412,5 +412,5 @@ print ' End simulation. Relatory saved in %s' %directory_save
 print ""
 
 # -------------------------------- Export Relatory ---------------------------------------
-relatory.export(directory_save, sys.argv[0], benchmark_problem, scheme_name, mesh_name, equation_number, npoints, nelem, length_min, dt, nt, Re, Sc, import_mesh_time, assembly_time, bc_apply_time, solution_time, polynomial_order, gausspoints)
+relatory.export(save.path, directory_save, sys.argv[0], benchmark_problem, scheme_name, mesh_name, equation_number, npoints, nelem, length_min, dt, nt, Re, Sc, import_mesh_time, assembly_time, bc_apply_time, solution_time, polynomial_order, gausspoints)
 

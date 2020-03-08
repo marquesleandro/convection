@@ -18,8 +18,9 @@
 import os
 import datetime
 
-def export(_directory_name, _simulator_name, _benchmark_problem, _scheme, _mesh_name, _equation_number, _npoints, _nelem, _length_min, _dt, _nt, _Re, _Sc, _import_mesh_time, _assembly_time, _bc_apply_time, _solution_time, _polynomial_order, _gausspoints):
+def export(_save_path, _directory_name, _simulator_name, _benchmark_problem, _scheme, _mesh_name, _equation_number, _npoints, _nelem, _length_min, _dt, _nt, _Re, _Sc, _import_mesh_time, _assembly_time, _bc_apply_time, _solution_time, _polynomial_order, _gausspoints):
 
+ save_path = _save_path
  directory_name = _directory_name
  simulator_name = _simulator_name
  benchmark_problem = _benchmark_problem
@@ -42,7 +43,7 @@ def export(_directory_name, _simulator_name, _benchmark_problem, _scheme, _mesh_
  bc_apply_time = round(_bc_apply_time,3)
  solution_time = round(_solution_time,3)
  
- path = '/home/marquesleandro/results' + '/' + str(directory_name)
+ path = save_path
  os.chdir(path)
 
  relatory_name = 'relatory_' + directory_name
@@ -68,9 +69,9 @@ def export(_directory_name, _simulator_name, _benchmark_problem, _scheme, _mesh_
  relatory.write(' Gaussian Quadrature (Gauss Points): ' + str(gausspoints) + '\n')
  relatory.write('\n')
 
- relatory.write(' ----------------------------- \n')
- relatory.write(' PARAMETERS OF THE SIMULATION: \n')
- relatory.write(' ----------------------------- \n')
+ relatory.write(' ------------------------- \n')
+ relatory.write(' PARAMETERS OF SIMULATION: \n')
+ relatory.write(' ------------------------- \n')
  relatory.write(' Mesh: ' + str(mesh_name) + '\n')
  relatory.write(' Number of equation: ' + str(equation_number) + '\n')
  relatory.write(' Number of nodes: ' + str(npoints) + '\n')

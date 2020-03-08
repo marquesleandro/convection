@@ -24,7 +24,7 @@ def Find(_file):
   file = _file
   
   # Exit any directory to /home/user
-  path = '/home/marquesleandro'
+  path = os.getcwd()
   os.chdir(path)
 
   # Directories list only
